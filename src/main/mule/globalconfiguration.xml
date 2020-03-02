@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd 
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
+<http:listener-config name="flightsapi-httpListenerConfig">
+    <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+    <apikit:config name="flightsapi-config" api="flightsapi.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="9e2fa30b-443d-4618-b249-bbaa0af2a202" >
+	<http:request-connection host="mu.mulesoft-training.com" port="80" />
+	</http:request-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="5f66b424-12a8-48cf-9c6a-0f8448194b73" >
+		<db:my-sql-connection host="${secure::db.host}" port="${secure::db.port}" user="${secure::db.username}" password="${secure::db.password}" database="integration" />
+	</db:config>
+	<!--  <configuration-properties doc:name="Configuration properties" doc:id="136d39ba-ece7-439b-a959-b0e8d8487b47" file="flight_${env}.yaml" /> 
+	  -->
+	<configuration doc:name="Configuration" doc:id="0b50024f-13c1-46c5-b604-b35820bb94ea" defaultErrorHandler-ref="globalconfigurationError_Handler" />
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="33314351-fdcb-4833-9d98-cf062985137f" file="flightsapi-secure-Dev.yaml" key="$">
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<error-handler name="globalconfigurationError_Handler" doc:id="0ec2673e-483c-42dc-b938-b9788a86c8d5" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="9419624b-e065-4862-a564-84db64d7eae4" type="ANY">
+			<ee:transform doc:name="Transform Message" doc:id="636942cb-0866-424a-b094-27b99e2baf2b" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	message:"Contact support team"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-continue>
+	</error-handler>
+	
+</mule>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="listalldeltaflightsFlow" doc:id="6038172e-8c89-4f28-b1c3-56f34ebb521f" >
+		<logger level="INFO" doc:name="Logger" doc:id="9b3d8274-8580-4f16-b399-69b40574ff49" message="first"/>
+		<wsc:consume doc:name="Consume" doc:id="735658d2-7c16-47e6-ac0d-e8cf4779b530" config-ref="Web_Service_Consumer_Config" operation="listAllFlights"/>
+		<ee:transform doc:name="Transform Message" doc:id="df96025d-be9d-48e1-b56e-18a74920fbf3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+ns ns0 http://soap.training.mulesoft.com/
+---
+{
+	flights: payload.body.ns0#listAllFlightsResponse.*return map ( return , indexOfReturn ) -> {
+		code: return.code default "",
+		price: return.price default 0,
+		origin: return.origin default "",
+		destination: return.destination default "",
+		departureDate: return.departureDate default "",
+		airlineName: return.airlineName default "",
+		planeType: return.planeType default "",
+		emptySeats: return.emptySeats default 0
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

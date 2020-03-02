@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	
+	<flow name="dbauditFlow" doc:id="d827d128-7d2a-40cb-a14d-8c62c4510b13" >
+		<logger level="INFO" doc:name="Logger" doc:id="8aad1ca2-98f0-429c-a995-1d8c7e649940" />
+		<db:insert doc:name="Insert" doc:id="2eeabd7e-4147-495a-8800-f70f04d64366" config-ref="Database_Config">
+			<db:sql >insert into AUDIT_LOG(UniqueId,SourceName,Request,Response,ReqTime,ResTime) values(:uniqueid,:sourcename,:request,:response,:reqtime,:restime)</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	uniqueid:vars.uniqueid,
+	sourcename:vars.sourcename,
+	request:vars.request,
+	response:vars.response,
+	reqtime:vars.reqtime,
+	restime:vars.restime
+	
+}]]]></db:input-parameters>
+		</db:insert>
+		<logger level="INFO" doc:name="Logger" doc:id="1ab2aff6-23c4-4654-96de-8ba22536421c" />
+		<ee:transform doc:name="Transform Message" doc:id="f3295c34-39d7-4a32-8bb6-f2fa85e21e52" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="19c51c73-cf1d-4006-8368-a3d2d42eff34" >
+				<set-variable value="#[error.description]" doc:name="Set Variable" doc:id="ee5dc2df-53dc-4a54-af51-86e0b5f6911b" variableName="errordescription"/>
+				<flow-ref doc:name="errornotificationFlow" doc:id="06b0973e-1135-4ddc-8bbd-ccabbe721c14" name="errornotificationFlow"/>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+</mule>

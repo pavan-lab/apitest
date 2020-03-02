@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<wsc:config name="Web_Service_Consumer_Config" doc:name="Web Service Consumer Config" doc:id="baa7c411-ecd5-4f9d-ae99-3434e6a5a2ea" >
+		<wsc:connection wsdlLocation="http://mu.mulesoft-training.com/delta?wsdl" service="TicketServiceService" port="TicketServicePort" address="http://mu.mulesoft-training.com/delta" />
+	</wsc:config>
+	<flow name="deltaflightsbydestinationFlow" doc:id="8e1ca6cb-6ea2-478a-821a-f7b4b7dab539" >
+		<logger level="INFO" doc:name="Logger" doc:id="87a40369-bf42-462c-8b48-445ec1e3274a" message="start"/>
+		<set-variable value="#[attributes.queryParams.destination]" doc:name="Set Variable" doc:id="a7b3b2aa-259c-428a-817d-cf854d00ad22" variableName="var"/>
+		<ee:transform doc:name="Transform Message" doc:id="f1aa6c3b-c453-4dba-ad13-c1b75811a425" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+ns ns0 http://soap.training.mulesoft.com/
+---
+{
+	ns0#findFlight: {
+		destination: vars."var"
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<wsc:consume doc:name="Consume" doc:id="2fa0fc09-d374-4008-9c9d-c98f2378df01" config-ref="Web_Service_Consumer_Config" operation="findFlight"/>
+		<ee:transform doc:name="Transform Message" doc:id="22a9e90c-c903-4d0c-b8a8-84fc2af6a9df" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+ns ns0 http://soap.training.mulesoft.com/
+---
+{
+	flights: payload.body.ns0#findFlightResponse.*return map ( return , indexOfReturn ) -> {
+		code: return.code default "",
+		price: return.price default 0,
+		origin: return.origin default "",
+		destination: return.destination default "",
+		departureDate: return.departureDate default "",
+		airlineName: return.airlineName default "",
+		planeType: return.planeType default "",
+		emptySeats: return.emptySeats default 0
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

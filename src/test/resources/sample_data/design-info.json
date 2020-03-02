@@ -1,0 +1,22 @@
+{
+  "sampleData": {
+    "06c28e5d-d7cf-4c96-9c8f-3783fc9c4625": {
+      "payload": "sample_data/object.dwl"
+    },
+    "c586b4cf-d084-48fd-8d67-4f1c3fc739f3": {
+      "attributes": "sample_data/object_1.dwl"
+    },
+    "d7cb13b5-2c99-4bbd-9b4a-0d1a4be1e03b": {
+      "attributes": "sample_data/object_2.dwl"
+    },
+    "ccb8ec6d-9495-4b22-bada-f63f27888e73": {
+      "attributes": "sample_data/defaultstringtype.dwl"
+    },
+    "22a9e90c-c903-4d0c-b8a8-84fc2af6a9df": {},
+    "8ae3f930-dd1a-4d43-a073-ae10a007ed28": {
+      "payload": "sample_data/object_5.dwl"
+    },
+    "f14b5747-4e84-410d-8d41-a661f34677d2": {},
+    "2c878025-f896-4789-9103-7a6de9ec36a4": {}
+  }
+}

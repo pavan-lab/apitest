@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="listAllFlightsByDestinationFlow" doc:id="178ac5e3-9280-4571-9116-2163c2e55482" >
+		<logger level="INFO" doc:name="Logger" doc:id="dd4f2d90-7bc5-454c-a662-626d0727ebba" />
+		<scatter-gather doc:name="Scatter-Gather" doc:id="3ed38873-bf00-41bd-8213-b45a7a44d9da" >
+			<route>
+				<try doc:name="Try" doc:id="3094f9d2-0faa-428f-a64b-7b6f4ce91607" >
+					<flow-ref doc:name="unitedflightsbydestinationFlow" doc:id="7c960639-781c-47f7-ae8c-bce60f2053a6" name="unitedflightsbydestinationFlow" />
+					<error-handler >
+						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="96384066-42cd-4b0f-80a0-577439d398b7" type="ANY">
+							<ee:transform doc:name="Transform Message" doc:id="11334e7b-fb58-4b16-baee-c8b77307bfb7" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: error.description
+}]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</on-error-continue>
+					</error-handler>
+				</try>
+			</route>
+			<route>
+				<try doc:name="Try" doc:id="1cd02e75-a8de-4ec2-9cf5-9c9aa0dcaae8" >
+					<flow-ref doc:name="deltaflightsbydestinationFlow" doc:id="1e71f28b-45f0-4367-a49a-da5e8385da98" name="deltaflightsbydestinationFlow" />
+					<error-handler >
+						<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="857ca9de-6af7-4549-bb31-a313c22d075e" type="ANY">
+							<ee:transform doc:name="Transform Message" doc:id="32d1ce58-899f-465b-9ccd-14cca4c638c8" >
+								<ee:message >
+									<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: error.description
+}]]></ee:set-payload>
+								</ee:message>
+							</ee:transform>
+						</on-error-continue>
+					</error-handler>
+				</try>
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Transform Message" doc:id="f14b5747-4e84-410d-8d41-a661f34677d2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+
+	Flights:
+	{
+		united:payload[0].payload,
+    	delta:payload[1].payload
+    }
+    
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="dd2a5d48-aade-4148-a4ca-9d26222ae2e2" />
+	</flow>
+</mule>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	
+	<flow name="unitedflightsbydestinationFlow" doc:id="5bd308b8-6a07-4415-b47a-6d87fde581d4" >
+		<logger level="INFO" doc:name="Logger" doc:id="7947b4f4-5a42-4f62-85cb-88f5fb0cadf3" message="first"/>
+		<http:request method="GET" doc:name="Request" doc:id="da2c09f4-037f-4978-a533-58e7d8270212" config-ref="HTTP_Request_configuration" path="/essentials/united/flights/{to}">
+			<http:uri-params ><![CDATA[#[output application/java
+---
+{
+	to : attributes.queryParams.destination
+}]]]></http:uri-params>
+		</http:request>
+		<logger level="INFO" doc:name="Logger" doc:id="85e7522f-bec8-4278-912c-d9a62c8cb7c0" message="last"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="f794f961-43d5-4e6e-be17-03efaa47e098" >
+				<ee:transform doc:name="Transform Message" doc:id="944817d5-1d44-4e62-b832-d4d4dfbe963d" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	code:503,
+	message:"unable to connect to target system"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+</mule>
